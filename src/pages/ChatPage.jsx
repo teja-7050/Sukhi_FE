@@ -35,6 +35,28 @@ const authHeaders = () => {
 const fmt = (d) =>
   new Date(d).toLocaleDateString([], { month: "short", day: "numeric" });
 
+const getSessionId = (session) => session?._id || session?.id || null;
+
+const normalizeSession = (session) => ({
+  ...session,
+  _id: getSessionId(session),
+  startMood: session?.startMood ?? session?.start_mood ?? null,
+  createdAt: session?.createdAt ?? session?.created_at,
+  updatedAt: session?.updatedAt ?? session?.updated_at,
+});
+
+const normalizeMessage = (message) => ({
+  id: message?._id || message?.id || Date.now() + Math.random(),
+  from: message?.role === "user" ? "user" : "bot",
+  text: message?.content || "",
+  time: new Date(
+    message?.createdAt || message?.created_at || Date.now(),
+  ).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  }),
+});
+
 // ─── Mood Picker Modal ─────────────────────────────────────────────────────
 function MoodModal({ title, subtitle, onSelect, onSkip }) {
   return (
@@ -205,49 +227,54 @@ function Sidebar({
         {!loading && sessions.length === 0 && (
           <p className="session-empty">No sessions yet</p>
         )}
-        {sessions.map((s) => (
-          <div
-            key={s._id}
-            className={`session-item ${s._id === activeId ? "active" : ""} ${s.ended ? "ended" : ""}`}
-            onMouseEnter={() => setHoveredId(s._id)}
-            onMouseLeave={() => setHoveredId(null)}
-            onClick={() => onSelect(s._id)}
-          >
-            <span className="session-item-icon">{s.ended ? "✅" : "💬"}</span>
-            <span className="session-item-body">
-              <span className="session-item-title">
-                {s.title || "New Conversation"}
+        {sessions.map((s) => {
+          const sid = getSessionId(s);
+          if (!sid) return null;
+
+          return (
+            <div
+              key={sid}
+              className={`session-item ${sid === activeId ? "active" : ""} ${s.ended ? "ended" : ""}`}
+              onMouseEnter={() => setHoveredId(sid)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => onSelect(sid)}
+            >
+              <span className="session-item-icon">{s.ended ? "✅" : "💬"}</span>
+              <span className="session-item-body">
+                <span className="session-item-title">
+                  {s.title || "New Conversation"}
+                </span>
+                <span className="session-item-date">
+                  {s.startMood
+                    ? `${MOODS.find((m) => m.label === s.startMood)?.emoji || ""} ${s.startMood} · `
+                    : ""}
+                  {fmt(s.updatedAt || s.createdAt)}
+                </span>
               </span>
-              <span className="session-item-date">
-                {s.startMood
-                  ? `${MOODS.find((m) => m.label === s.startMood)?.emoji || ""} ${s.startMood} · `
-                  : ""}
-                {fmt(s.updatedAt || s.createdAt)}
-              </span>
-            </span>
-            {hoveredId === s._id && (
-              <button
-                className="session-delete-btn"
-                title="Delete session"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(s._id);
-                }}
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
+              {hoveredId === sid && (
+                <button
+                  className="session-delete-btn"
+                  title="Delete session"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(sid);
+                  }}
                 >
-                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-                </svg>
-              </button>
-            )}
-          </div>
-        ))}
+                  <svg
+                    width="13"
+                    height="13"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </aside>
   );
@@ -305,17 +332,7 @@ function ChatPanel({
         );
         const data = await res.json();
         if (data.success && data.messages.length > 0) {
-          setMessages(
-            data.messages.map((m) => ({
-              id: m._id,
-              from: m.role === "user" ? "user" : "bot",
-              text: m.content,
-              time: new Date(m.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-            })),
-          );
+          setMessages(data.messages.map(normalizeMessage));
         }
       } catch (_) {
       } finally {
@@ -389,9 +406,10 @@ function ChatPanel({
         });
         const cd = await cr.json();
         if (!cd.success) throw new Error("Failed to create session");
-        sid = cd.session._id;
+        sid = getSessionId(cd.session);
+        if (!sid) throw new Error("Session id missing from API response");
         setResolvedSessionId(sid);
-        onSessionCreated(cd.session);
+        onSessionCreated(normalizeSession(cd.session));
       }
 
       const res = await fetch(`${API}/api/chat`, {
@@ -768,7 +786,8 @@ export default function ChatPage() {
           headers: authHeaders(),
         });
         const data = await res.json();
-        if (data.success) setSessions(data.sessions);
+        if (data.success)
+          setSessions((data.sessions || []).map(normalizeSession));
       } catch (_) {
       } finally {
         setLoadingSessions(false);
@@ -783,20 +802,24 @@ export default function ChatPage() {
   }, []);
 
   const handleSelect = (id) => {
+    if (!id) return;
     setPendingNew(false);
     setActive(id);
     setPanelKey(id);
   };
 
   const handleSessionCreated = useCallback((session) => {
-    setSessions((prev) => [session, ...prev]);
-    setActive(session._id);
+    const normalized = normalizeSession(session);
+    setSessions((prev) => [normalized, ...prev]);
+    setActive(normalized._id);
   }, []);
 
   const handleSessionEnded = useCallback((sessionId, _feedbackData) => {
     if (sessionId) {
       setSessions((prev) =>
-        prev.map((s) => (s._id === sessionId ? { ...s, ended: true } : s)),
+        prev.map((s) =>
+          getSessionId(s) === sessionId ? { ...s, ended: true } : s,
+        ),
       );
     }
     setActive(null);
@@ -806,13 +829,14 @@ export default function ChatPage() {
 
   const handleDelete = useCallback(
     async (id) => {
+      if (!id) return;
       try {
         await fetch(`${API}/api/chat/sessions/${id}`, {
           method: "DELETE",
           credentials: "include",
           headers: authHeaders(),
         });
-        setSessions((prev) => prev.filter((s) => s._id !== id));
+        setSessions((prev) => prev.filter((s) => getSessionId(s) !== id));
         if (activeSessionId === id) {
           setActive(null);
           setPendingNew(false);
@@ -830,7 +854,8 @@ export default function ChatPage() {
         headers: authHeaders(),
       });
       const data = await res.json();
-      if (data.success) setSessions(data.sessions);
+      if (data.success)
+        setSessions((data.sessions || []).map(normalizeSession));
     } catch (_) {}
   }, []);
 
