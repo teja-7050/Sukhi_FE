@@ -4,7 +4,7 @@ import CustomCursor from "../components/CustomCursor";
 import { saveAuth } from "../utils/auth";
 import "../styles/login.css";
 
-const API = process.env.VITE_API_URL ;
+const API = import.meta.env.VITE_API_URL ;
 
 const isValidPhone = (v) => /^\d{10}$/.test(v);
 const isValidOtp = (v) => /^\d{6}$/.test(v);
