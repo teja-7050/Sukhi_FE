@@ -1,0 +1,136 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px 40px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 34px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.login-tag {
+  color: var(--orange);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.login-title {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 40px);
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.login-sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  outline: none;
+}
+
+.login-input:focus {
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14);
+}
+
+.login-input:disabled {
+  opacity: 0.8;
+}
+
+.login-message {
+  margin: 0;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.login-message--info {
+  color: var(--amber);
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.login-message--error {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.login-message--success {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.login-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-btn {
+  border: none;
+  border-radius: 100px;
+  padding: 14px 18px;
+  font-family: var(--sans);
+  font-size: 15px;
+  cursor: none;
+  transition: all 0.3s ease;
+}
+
+.login-btn-primary {
+  background: var(--orange);
+  color: #fff;
+}
+
+.login-btn-primary:hover {
+  background: var(--amber);
+  transform: translateY(-1px);
+}
+
+.login-btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.login-btn-secondary:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.login-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
+}
