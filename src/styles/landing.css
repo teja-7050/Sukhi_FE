@@ -19,16 +19,19 @@
 }
 
 .brand {
-  font-family: var(--serif);
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
 }
 
-.brand span {
-  color: var(--orange);
+.brand-logo {
+  width: auto;
+  height: 58px;
+  display: block;
+}
+
+.brand-logo--footer {
+  height: 72px;
 }
 
 .nav-links {
@@ -1329,6 +1332,14 @@ footer {
 
   .nav-links {
     display: none;
+  }
+
+  .brand-logo {
+    height: 48px;
+  }
+
+  .brand-logo--footer {
+    height: 62px;
   }
 
   .section {

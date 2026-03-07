@@ -202,8 +202,8 @@ export default function LandingPage() {
       <CustomCursor />
 
       <nav className={`nav ${scrolled ? "scrolled" : ""}`}>
-        <a className="brand" href="#home">
-          Su<span>khi</span>
+        <a className="brand" href="#home" aria-label="Sukhi home">
+          <img src="/logo.png" alt="Sukhi" className="brand-logo" />
         </a>
         <ul className="nav-links">
           {[
@@ -588,8 +588,12 @@ export default function LandingPage() {
         <div className="footer-inner">
           <div className="footer-top">
             <div className="footer-brand">
-              <a className="brand" href="#home" style={{ fontSize: 28 }}>
-                Su<span style={{ color: "var(--orange)" }}>khi</span>
+              <a className="brand" href="#home" aria-label="Sukhi home">
+                <img
+                  src="/logo.png"
+                  alt="Sukhi"
+                  className="brand-logo brand-logo--footer"
+                />
               </a>
               <p>
                 The world's most compassionate AI psychiatrist. Built with love,
